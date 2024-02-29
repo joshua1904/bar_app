@@ -101,12 +101,9 @@ def get_all_beer_states_2(min_weight: int, max_weight: int, min_time_diff: int, 
     result = []
     for beer_state in beer_states:
         _, time_stamp, value, serial, last_seen, name = beer_state
-        info = utils.get_info(min_time_diff, min_weight, max_weight, time_stamp, value, last_seen, tolerance)
-        if not name:
-            name = serial
-        result.append({"beer_percentage": f"{info.percentage_of_beer}%", "color": info.info_color, "serial": serial,
-                       "name": name})
-    return result
+        info = utils.get_info(min_time_diff, min_weight, max_weight, time_stamp, value, last_seen, tolerance, name, serial)
+        result.append(info)
+    return [{"beer_percentage": f"{info.percentage_of_beer}%", "color": info.info_color, "serial": info.serial,"name": info.name} for info in sorted(result, key=lambda x: x.percentage_of_beer)]
 
 
 if __name__ == '__main__':

@@ -9,6 +9,8 @@ STATUS_COLORS = {"fullBeer": "green", "emptyBeer": "red", "notUsed": "grey", "no
 class INFO:
     percentage_of_beer: float
     info_color: str | None
+    name: str
+    serial: str
 
 @dataclasses.dataclass
 class Settings:
@@ -36,7 +38,7 @@ def _is_new_beer_state(last_seen: datetime, min_time_diff: int) -> bool:
     return True
 
 
-def get_info(min_time_diff: int, min_weight: int, max_weight: int, time_stamp: str, value: int, last_seen: str, tolerance: int) -> INFO:
+def get_info(min_time_diff: int, min_weight: int, max_weight: int, time_stamp: str, value: int, last_seen: str, tolerance: int, name: str, serial: str) -> INFO:
     time_stamp = datetime.datetime.strptime(time_stamp, "%Y-%m-%d %H:%M:%S.%f")
     last_seen = datetime.datetime.strptime(last_seen, "%Y-%m-%d %H:%M:%S.%f")
     percentage_of_beer = int((value - min_weight) / (max_weight - min_weight) * 100)
@@ -44,7 +46,9 @@ def get_info(min_time_diff: int, min_weight: int, max_weight: int, time_stamp: s
     info_color = _get_info_color(percentage_of_beer, new_beer_state, last_seen, time_stamp, min_time_diff, tolerance, min_weight)
     if percentage_of_beer < 0:
         percentage_of_beer = 0
-    return INFO(percentage_of_beer, info_color)
+    if not name:
+        name = serial
+    return INFO(percentage_of_beer, info_color, name, serial)
 
 def get_settings_from_tuple(settings: tuple[int, int, int, int, int]) -> Settings:
     _, min_weight, max_weight, min_time_diff, tolerance = settings
