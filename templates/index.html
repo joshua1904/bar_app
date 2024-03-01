@@ -81,16 +81,7 @@
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">BarApp</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/edit">Edit</a>
-                </li>
-            </ul>
-        </div>
+        <a href="/edit"><img src="{{ edit_symbol }}" height="30" width="30" ></a>
     </div>
 </nav>
 <body>
@@ -103,22 +94,22 @@
     <div class="box">
         {% if item.info_color == "black" %}
         <div class="circle" style="background-color: black;">
-            {{ item.percentage_of_beer }}
+            {{ item.percentage_of_beer }} %
         </div>
         {% endif %}
         {% if item.info_color == "green" %}
         <div class="circle" style="background-color: green;">
-            {{ item.percentage_of_beer }}
+            {{ item.percentage_of_beer }} %
         </div>
         {% endif %}
         {% if item.info_color == "red" %}
         <div class="circle" style="background-color: red;">
-            {{ item.percentage_of_beer }}
+            {{ item.percentage_of_beer }} %
         </div>
         {% endif %}
         {% if item.info_color == "grey" %}
         <div class="circle" style="background-color: grey;">
-            {{ item.percentage_of_beer }}
+            {{ item.percentage_of_beer }} %
         </div>
         {% endif %}
         <div class="name">

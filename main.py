@@ -1,23 +1,24 @@
 import dataclasses
 import sqlite3
-
 import flask
 from flask import Flask, request, flash
 
 import sql
 import utils
-
+from waitress import serve
+import os
 DATABASE = "test.db"
 
 app = Flask(__name__)
 sql.init()
-app.secret_key = "Test"
+app.config["UPLOAD_FOLDER"] = os.path.join("static", "IMG")
+edit_symbol = os.path.join(app.config["UPLOAD_FOLDER"], "edit_symbol.png")
 
 
 @app.route("/")
 def index_page():
     settings = utils.get_settings_from_tuple(sql.get_settings())
-    return flask.render_template("index.html", data=get_all_beer_states_2(settings.min_weight, settings.max_weight,
+    return flask.render_template("index.html", edit_symbol=edit_symbol, data=get_all_beer_states_2(settings.min_weight, settings.max_weight,
                                                                           settings.min_time_diff, settings.tolerance))
 
 
@@ -132,8 +133,8 @@ def _return_edit_html():
     empty, full, not_used, offline = sql.get_filter()
     return flask.render_template("edit.html", min_weight=settings.min_weight, max_weight=settings.max_weight,
                                  min_time_diff=settings.min_time_diff, tolerance=settings.tolerance, empty=empty,
-                                 offline=offline, not_used=not_used, full=full)
+                                 offline=offline, not_used=not_used, full=full, edit_symbol=edit_symbol)
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True, port=5000)
+    serve(app, host='0.0.0.0', port=5000)
