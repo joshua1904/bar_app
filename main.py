@@ -1,3 +1,6 @@
+import dataclasses
+import sqlite3
+
 import flask
 from flask import Flask, request, flash
 
@@ -30,11 +33,12 @@ def set_serial_to_name(serial: str, name: str) -> bool:
 def edit():
     return _return_edit_html()
 
+
 @app.route("/serialToName")
 def get_serial_toName():
     try:
         serial_to_name_list = sql.get_serial_name_list()
-    except Exception:
+    except sqlite3.Error:
         return flask.jsonify([])
     result = {}
     for i in serial_to_name_list:
@@ -63,6 +67,7 @@ def delete():
         pass
     return _return_edit_html()
 
+
 @app.route('/edit_settings', methods=['POST'])
 def edit_settings():
     min_weight = int(request.form.get('min_weight'))
@@ -70,20 +75,21 @@ def edit_settings():
     min_time_diff = request.form.get('min_time_diff')
     tolerance = request.form.get('tolerance')
     try:
-        if min_weight >= max_weight:
+        if min_weight <= max_weight:
+            sql.update_settings(min_weight, max_weight, min_time_diff, tolerance)
+        else:
             flash(f"Max weight has to be bigger than min Weight! min: {min_weight}, {max_weight}", "error")
-            # sorry
-            raise ValueError
-        sql.update_settings(min_weight, max_weight, min_time_diff, tolerance)
-    except:
-        pass
+    except sqlite3.Error:
+        flash("Sql Error", "error")
     return _return_edit_html()
+
 
 def get_all_beer_states_2(min_weight: int, max_weight: int, min_time_diff: int, tolerance: int):
     try:
         beer_states = sql.get_beer_states()
         empty_filter, full_filter, not_used_filter, offline_filter = sql.get_filter()
-    except Exception:
+    except sqlite3.Error:
+        flash("Sql Error", "error")
         return []
 
     result = []
@@ -93,8 +99,7 @@ def get_all_beer_states_2(min_weight: int, max_weight: int, min_time_diff: int, 
                               serial)
         if is_selected(empty_filter, full_filter, not_used_filter, offline_filter, info.info_color):
             result.append(info)
-    return [{"beer_percentage": f"{info.percentage_of_beer}%", "color": info.info_color, "serial": info.serial,
-             "name": info.name} for info in sorted(result, key=lambda x: x.percentage_of_beer)]
+    return [dataclasses.asdict(info) for info in sorted(result, key=lambda x: x.percentage_of_beer)]
 
 
 def is_selected(empty_filter: bool, full_filter: bool, not_used_filter: bool, offline_filter: bool, current_color: str):
@@ -115,13 +120,20 @@ def set_filter():
     full = request.form.get("full_checkbox") is not None
     not_used = request.form.get("not_used_checkbox") is not None
     offline = request.form.get("offline_checkbox") is not None
-    sql.update_filter(empty, full, not_used, offline)
+    try:
+        sql.update_filter(empty, full, not_used, offline)
+    except sqlite3.Error:
+        flash("Sql Error", "error")
     return _return_edit_html()
+
+
 def _return_edit_html():
     settings = utils.get_settings_from_tuple(sql.get_settings())
     empty, full, not_used, offline = sql.get_filter()
     return flask.render_template("edit.html", min_weight=settings.min_weight, max_weight=settings.max_weight,
-                                 min_time_diff=settings.min_time_diff, tolerance=settings.tolerance, empty=empty, offline=offline, not_used=not_used, full=full)
+                                 min_time_diff=settings.min_time_diff, tolerance=settings.tolerance, empty=empty,
+                                 offline=offline, not_used=not_used, full=full)
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True, port=5000)

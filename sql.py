@@ -1,6 +1,5 @@
 import os
 import sqlite3
-from utils import Settings
 
 DATABASE = "test.db"
 if os.environ.get("SQLFILE"):
@@ -48,6 +47,7 @@ INSERT_STATEMENT_SETTINGS = """INSERT INTO settings (min_weight, max_weight, min
 UPDATE_STATEMENT_SETTINGS = """UPDATE settings SET min_weight = ?, max_weight = ?, min_time_diff = ?, tolerance = ? WHERE id = 1"""
 INSERT_STATEMENT_FILTER = """INSERT INTO filter (full, empty, not_used, offline) VALUES(?, ?, ?, ?)"""
 UPDATE_STATEMENT_FILTER = """UPDATE filter SET empty = ?, full = ?, not_used = ?, offline = ? WHERE id = 1"""
+
 
 def init():
     with sqlite3.connect(DATABASE) as con:
