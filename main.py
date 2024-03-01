@@ -24,7 +24,7 @@ def index_page():
 def set_serial_to_name(serial: str, name: str) -> bool:
     try:
         sql.set_serial_to_name(serial, name)
-    except Exception:
+    except sqlite3.Error:
         return False
     return True
 
