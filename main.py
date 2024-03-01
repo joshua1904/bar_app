@@ -11,8 +11,6 @@ sql.init()
 app.secret_key = "Test"
 
 
-
-
 @app.route("/")
 def index_page():
     settings = utils.get_settings_from_tuple(sql.get_settings())
@@ -30,10 +28,7 @@ def set_serial_to_name(serial: str, name: str) -> bool:
 
 @app.route("/edit")
 def edit():
-    settings = utils.get_settings_from_tuple(sql.get_settings())
-    return flask.render_template("edit.html", min_weight=settings.min_weight, max_weight=settings.max_weight,
-                                 min_time_diff=settings.min_time_diff, tolerance=settings.tolerance)
-
+    return _return_edit_html()
 
 @app.route("/serialToName")
 def get_serial_toName():
@@ -52,59 +47,81 @@ def get_serial_toName():
 def update():
     serial_number = request.form.get('serial_number')
     name = request.form.get('name')
-    settings = utils.get_settings_from_tuple(sql.get_settings())
     if set_serial_to_name(serial_number, name):
         flash(f"Successfully updated {serial_number}!", "info")
     else:
         flash(f"Could not update serial Number {serial_number}!")
-    return flask.render_template("edit.html", min_weight=settings.min_weight, max_weight=settings.max_weight,
-                                 min_time_diff=settings.min_time_diff, tolerance=settings.tolerance)
+    return _return_edit_html()
 
 
 @app.route('/delete', methods=['POST'])
 def delete():
     name = request.form.get('delete_name')
     try:
-        settings = utils.get_settings_from_tuple(sql.get_settings())
         sql.delete_serial_to_name(name)
     except:
         pass
-    return flask.render_template("edit.html", min_weight=settings.min_weight, max_weight=settings.max_weight,
-                                 min_time_diff=settings.min_time_diff, tolerance=settings.tolerance)
-
+    return _return_edit_html()
 
 @app.route('/edit_settings', methods=['POST'])
 def edit_settings():
-    min_weight = request.form.get('min_weight')
-    max_weight = request.form.get('max_weight')
+    min_weight = int(request.form.get('min_weight'))
+    max_weight = int(request.form.get('max_weight'))
     min_time_diff = request.form.get('min_time_diff')
     tolerance = request.form.get('tolerance')
     try:
         if min_weight >= max_weight:
             flash(f"Max weight has to be bigger than min Weight! min: {min_weight}, {max_weight}", "error")
-           # sorry
+            # sorry
             raise ValueError
         sql.update_settings(min_weight, max_weight, min_time_diff, tolerance)
-        settings = utils.get_settings_from_tuple(sql.get_settings())
     except:
-        settings = utils.get_settings_from_tuple(sql.get_settings())
-    return flask.render_template("edit.html", min_weight=settings.min_weight, max_weight=settings.max_weight,
-                                 min_time_diff=settings.min_time_diff, tolerance=settings.tolerance)
-
+        pass
+    return _return_edit_html()
 
 def get_all_beer_states_2(min_weight: int, max_weight: int, min_time_diff: int, tolerance: int):
     try:
         beer_states = sql.get_beer_states()
+        empty_filter, full_filter, not_used_filter, offline_filter = sql.get_filter()
     except Exception:
-        flask.jsonify([])
-        return
+        return []
+
     result = []
     for beer_state in beer_states:
         _, time_stamp, value, serial, last_seen, name = beer_state
-        info = utils.get_info(min_time_diff, min_weight, max_weight, time_stamp, value, last_seen, tolerance, name, serial)
-        result.append(info)
-    return [{"beer_percentage": f"{info.percentage_of_beer}%", "color": info.info_color, "serial": info.serial,"name": info.name} for info in sorted(result, key=lambda x: x.percentage_of_beer)]
+        info = utils.get_info(min_time_diff, min_weight, max_weight, time_stamp, value, last_seen, tolerance, name,
+                              serial)
+        if is_selected(empty_filter, full_filter, not_used_filter, offline_filter, info.info_color):
+            result.append(info)
+    return [{"beer_percentage": f"{info.percentage_of_beer}%", "color": info.info_color, "serial": info.serial,
+             "name": info.name} for info in sorted(result, key=lambda x: x.percentage_of_beer)]
 
+
+def is_selected(empty_filter: bool, full_filter: bool, not_used_filter: bool, offline_filter: bool, current_color: str):
+    if current_color == "red" and not empty_filter:
+        return False
+    if current_color == "green" and not full_filter:
+        return False
+    if current_color == "grey" and not not_used_filter:
+        return False
+    if current_color == "black" and not offline_filter:
+        return False
+    return True
+
+
+@app.route('/set_filter', methods=['POST'])
+def set_filter():
+    empty = request.form.get("empty_checkbox") is not None
+    full = request.form.get("full_checkbox") is not None
+    not_used = request.form.get("not_used_checkbox") is not None
+    offline = request.form.get("offline_checkbox") is not None
+    sql.update_filter(empty, full, not_used, offline)
+    return _return_edit_html()
+def _return_edit_html():
+    settings = utils.get_settings_from_tuple(sql.get_settings())
+    empty, full, not_used, offline = sql.get_filter()
+    return flask.render_template("edit.html", min_weight=settings.min_weight, max_weight=settings.max_weight,
+                                 min_time_diff=settings.min_time_diff, tolerance=settings.tolerance, empty=empty, offline=offline, not_used=not_used, full=full)
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True, port=5000)

@@ -7,6 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Display Data</title>
     <style>
+        .navbar-nav .nav-link {
+    color: white !important;
+}
+
+.navbar-brand {
+    color: white !important;
+}
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -15,7 +22,8 @@
             align-items: flex-start;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: #333; /* Darker background color */
+            color: #fff; /* Light text color */
         }
 
         .box {
@@ -23,13 +31,12 @@
             text-align: center;
             padding: 10px;
             margin: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #666; /* Darker border color */
             border-radius: 10px;
             width: 250px;
-            background-color: #fff;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            background-color: #444; /* Darker box background color */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.4); /* Darker box shadow */
         }
-
         .circle {
             width: 60px;
             height: 60px;
@@ -41,13 +48,17 @@
             margin: 0 auto 10px;
             font-size: 14px;
         }
+        .legend_circle label {
+        position: absolute;
+        size: 5;
+        }
 
         .name {
             font-weight: bold;
             font-size: 14px;
         }
         nav {
-            background-color: #000599;
+            background-color: #222; /* Darker navigation background color */
             color: #fff;
             padding: 10px;
             text-align: center;
@@ -67,13 +78,10 @@
         }
     </style>
 </head>
-<body>
-
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
+<nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">BarApp</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -85,6 +93,9 @@
         </div>
     </div>
 </nav>
+<body>
+
+
 
 <div class="parent">
 
@@ -117,15 +128,5 @@
     {% endfor %}
 </div>
 
-</body>
-</html>
-
-
-<script>
-    // Reload the page every 5 seconds (5000 milliseconds)
-    setInterval(function(){
-        location.reload();
-    }, 5000);
-</script>
 </body>
 </html>
